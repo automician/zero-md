@@ -15,6 +15,8 @@
     constructor() {
       super();
       window.ZeroMd = window.ZeroMd || {};
+      window.ZeroMd.markedjs = window.ZeroMd.markedjs || {};
+      window.ZeroMd.markedjs.options = window.ZeroMd.markedjs.options || {};
       window.ZeroMd.config = window.ZeroMd.config || {};
       window.ZeroMd.config.baseUrl = window.ZeroMd.config.baseUrl || '';
       window.ZeroMd.config.markedUrl = window.ZeroMd.config.markedUrl || 'https://cdn.jsdelivr.net/npm/marked@0/marked.min.js';
@@ -144,7 +146,41 @@
                      this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
                      this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')])
           .then(data => {
-            resolve('<div class="markdown-body">' + window.marked(data[0], { highlight: this._prismHighlight.bind(this) }) + '</div>');
+		  const renderer = new window.marked.Renderer();
+		  let headers = [];
+		  renderer.heading = (text, level) => {				                
+			const [, pure, userId] = text.match(/^(.*)?\s*{#(.*)}$/mi) || [null, text,];
+	           	const id = userId || pure.toLowerCase().replace(/[^\w]+/g, '-');
+			const result = `<h${level} id="${id}">${pure}</h${level}>`;
+			headers.push(result);
+			return result;
+		  };
+		  let md = data[0];
+		  const options = {
+		  	renderer: renderer
+			highlight: this._prismHighlight.bind(this) 
+		  };
+		  let html = window.marked(md, Object.assign(options, window.ZeroMd.markedjs.options));
+		  const toc = /\[TOC\]/i;
+		  let element = '';
+		  for (const el of headers) {
+			const level = el[2]   
+			let id;
+			const idToFind = /\{#(.*)\}/i;
+			const textToFind = />.*</gi;
+			el.search(idToFind) !== -1 ? id = idToFind : id = /=".*"/i;
+			id = el.match(id)[0];
+			const href = `href="#${id.substr(2, id.length - 2)}`
+			const textStart = el.indexOf(el.match(textToFind)[0]) + 1;
+			const textEnd = textStart + el.match(textToFind)[0].length;
+			const text = el.substr(textStart, textEnd);
+			const indent = '&ensp;';
+			element = `${element}${indent.repeat(level - 1)}<a ${href}>${text}</a><br>`
+		  }
+		  md = md.replace(toc, element)
+		  html = window.marked(md, Object.assign(options, window.ZeroMd.markedjs.options));
+
+            resolve('<div class="markdown-body">' + html + '</div>');
           }, err => { reject(err); });
       });
     }
