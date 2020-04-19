@@ -18,6 +18,7 @@
       window.ZeroMd.config = window.ZeroMd.config || {};
       window.ZeroMd.config.baseUrl = window.ZeroMd.config.baseUrl || '';
       window.ZeroMd.config.anchorIdsToLowerCase = window.ZeroMd.config.anchorIdsToLowerCase && true;
+      window.ZeroMd.config.indentInsideTocBySpaces = window.ZeroMd.config.indentInsideTocBySpaces || 4;
       window.ZeroMd.config.markedUrl = window.ZeroMd.config.markedUrl || 'https://cdn.jsdelivr.net/npm/marked@0/marked.min.js';
       window.ZeroMd.config.prismUrl = window.ZeroMd.config.prismUrl || 'https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js';
       window.ZeroMd.config.cssUrls = window.ZeroMd.config.cssUrls || ['https://cdn.jsdelivr.net/npm/github-markdown-css@2/github-markdown.min.css', 'https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism.min.css'];
@@ -155,8 +156,8 @@
               const pureWithoutTags = pure.replace(/<\/?\w+>/g, '');
               const id = userId || (window.ZeroMd.config.anchorIdsToLowerCase ? pureWithoutTags.toLowerCase().replace(notAUnicodeWord, '-')
               : pureWithoutTags.replace(notAUnicodeWord, '-'));
-              const space = '&ensp;';
-              tableOfContents += `${space.repeat(4 * (level - 1))}<a href="#${id}">${pureWithoutTags}</a><br>`;
+              const indentInsideToc = '&ensp;'.repeat(window.ZeroMd.config.indentInsideTocBySpaces * (level - 1));
+              tableOfContents += `${indentInsideToc}<a href="#${id}">${pureWithoutTags}</a><br>`;
               
               return`<h${level}>${(encodeURI(id) === id) ? '' : `<span id="${encodeURI(id)}"></span>`}
               <a id="${id}" class="anchor" aria-hidden="true" href="#${id}"></a>${pure}</h${level}>`;
@@ -171,7 +172,7 @@
             let html = window.marked(md, options);
 
             const toc = /\[toc\]/i;
-            html = html.replace(toc, `<div class=“toc”>${tableOfContents}</div>`);
+            html = html.replace(toc, `<div class=“toc”>${tableOfContents.replace(/<br>$/, '')}</div>`);
 
             resolve('<div class="markdown-body">' + window.marked(html, { highlight: this._prismHighlight.bind(this) }) + '</div>');
           }, err => { reject(err); });
