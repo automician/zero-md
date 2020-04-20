@@ -19,7 +19,7 @@
       window.ZeroMd.config.baseUrl = window.ZeroMd.config.baseUrl || '';
       window.ZeroMd.config.anchorIdsToLowerCase = window.ZeroMd.config.anchorIdsToLowerCase === undefined ? 
         true : window.ZeroMd.config.anchorIdsToLowerCase;
-      window.ZeroMd.config.indentInsideTocBySpaces = window.ZeroMd.config.indentInsideTocBySpaces || 4;
+      window.ZeroMd.config.indentInsideTocByPixels = window.ZeroMd.config.indentInsideTocByPixels || 40;
       window.ZeroMd.config.markedUrl = window.ZeroMd.config.markedUrl || 'https://cdn.jsdelivr.net/npm/marked@0/marked.min.js';
       window.ZeroMd.config.prismUrl = window.ZeroMd.config.prismUrl || 'https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js';
       window.ZeroMd.config.cssUrls = window.ZeroMd.config.cssUrls || ['https://cdn.jsdelivr.net/npm/github-markdown-css@2/github-markdown.min.css', 'https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism.min.css'];
@@ -159,10 +159,10 @@
               const id = userId || (anchorIdsToLowerCase ?
                 pureWithoutTags.toLowerCase().replace(notAUnicodeWord, '-') : 
                 pureWithoutTags.replace(notAUnicodeWord, '-'));
-              const numberOfSpaces = window.ZeroMd.config.indentInsideTocBySpaces;
-              const indentInsideToc = '&ensp;'.repeat(numberOfSpaces * (level - 1));
-              tocLinks.push(`${indentInsideToc}<a href="#${id}">${pureWithoutTags}</a>`);
-              
+              const pixelsNumber = window.ZeroMd.config.indentInsideTocByPixels;
+              const indentInsideToc = `style="margin-left: ${pixelsNumber * (level - 1)}px"`;
+              tocLinks.push(`<div ${indentInsideToc}><a href="#${id}">${pureWithoutTags}</a></div>`);
+             
               return`<h${level}>${(encodeURI(id) === id) ? '' : `<span id="${encodeURI(id)}"></span>`}
               <a id="${id}" class="anchor" aria-hidden="true" href="#${id}"></a>${pure}</h${level}>`;
             };
@@ -176,8 +176,8 @@
             let html = window.marked(md, options);
 
             const tocMarker = /\[toc\]/i;
-            const toc = tocLinks.join('<br>');
-            html = html.replace(tocMarker, `<div class=“toc”>${toc}</div>`);
+            const toc = `<div class=toc>${tocLinks.join('')}</div>`;
+            html = html.replace(tocMarker, toc);
 
             resolve('<div class="markdown-body">' + window.marked(html, { highlight: this._prismHighlight.bind(this) }) + '</div>');
           }, err => { reject(err); });
