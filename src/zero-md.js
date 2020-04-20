@@ -161,7 +161,7 @@
                 pureWithoutTags.replace(notAUnicodeWord, '-'));
               const pixelsNumber = window.ZeroMd.config.indentInsideTocByPixels;
               const indentInsideToc = `style="margin-left: ${pixelsNumber * (level - 1)}px"`;
-              tocLinks.push(`<div ${indentInsideToc}><a href="#${id}">${pureWithoutTags}</a></div>`);
+              tocLinks.push(`<div ${indentInsideToc} class="toc-item"><a href="#${id}">${pureWithoutTags}</a></div>`);
              
               return`<h${level}>${(encodeURI(id) === id) ? '' : `<span id="${encodeURI(id)}"></span>`}
               <a id="${id}" class="anchor" aria-hidden="true" href="#${id}"></a>${pure}</h${level}>`;
@@ -176,7 +176,7 @@
             let html = window.marked(md, options);
 
             const tocMarker = /\[toc\]/i;
-            const toc = `<div class=toc>${tocLinks.join('')}</div>`;
+            const toc = `<div class="toc">${tocLinks.join('')}</div>`;
             html = html.replace(tocMarker, toc);
 
             resolve('<div class="markdown-body">' + window.marked(html, { highlight: this._prismHighlight.bind(this) }) + '</div>');
