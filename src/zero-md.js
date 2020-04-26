@@ -160,14 +160,17 @@
                 pureWithoutTags.toLowerCase().replace(notAUnicodeWord, '-') : 
                 pureWithoutTags.replace(notAUnicodeWord, '-'));
               const pixelsNumber = window.ZeroMd.config.indentInsideTocByPixels;
-              const indentInsideToc = `style="margin-left: ${pixelsNumber * (level - 1)}px"`;
-              tocLinks.push(`<div ${indentInsideToc} class="toc-item"><a href="#${id}">${pureWithoutTags}</a></div>`);
-             
+              if (level > levelDeletingTOC) {
+                const indentInsideToc = `style="margin-left: ${pixelsNumber * (level - 1 - levelDeletingTOC)}px"`;
+                tocLinks.push(`<div ${indentInsideToc}><a href="#${id}">${pureWithoutTags}</a></div>`);
+              }  
               return`<h${level}>${(encodeURI(id) === id) ? '' : `<span id="${encodeURI(id)}"></span>`}
               <a id="${id}" class="anchor" aria-hidden="true" href="#${id}"></a>${pure}</h${level}>`;
             };
 
             let md = data[0];
+
+            const [, levelDeletingTOC] = md.match(/TOC>(\d)/i) || [null, 0];
 
             const options = {
               renderer: renderer,
