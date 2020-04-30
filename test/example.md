@@ -8,7 +8,7 @@ A Lorem Ipsum generator that doesn't suck. :P
 ## Anchor **link** test with strong one word
 Clicking [Taman et veri](#tamen-et-veri) should scroll to the correct section.
 
-## **Concidit caput certo flere pedum with castom id and strong** {#castom-id}
+### **Concidit caput certo flere pedum with castom id and strong** {#castom-id}
 
 *Lorem* markdownum implet caedisque dextrasque doluit timor idcirco **isque
 favillae** aliquid nobilitate posuit. Hortis tuo ferunt sanguine latuerunt
@@ -20,7 +20,7 @@ sonitu, dato dixisse dulci Laiades.
 
 Permulcetque dant, admonitorque quam poenas. Olivae haec hostesque formidine sub
 memorante nullum; quoque massa usum videri.
-
+<!--TOC>1-->
 ## На русском языке с **жирным подчеркиванием** и *курсивом*
 
 Illam credulitate [nil oculis](http://quamquetamen.net/huicadest.aspx) si genis
@@ -50,7 +50,7 @@ vimque aera*, unius augent odium solane; quo Phoebus possent? Lege inmeritam
 amans sacrorum pallada. Corpore sacra nihil: corpora taceam, aberat
 **repulsus**.
 
-## *Українська мова курсивом*
+### *Українська мова курсивом*
 
 Lorem markdownum iugulum levati; tuum feri ignes rogantem fugio natorum.
 Eueninae ducere et erat ad caruit adclinavit quod. Quae diebus domo, posset
