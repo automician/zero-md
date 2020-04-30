@@ -150,12 +150,14 @@
 		  let links = [];
 		  renderer.heading = (text, level) => {				                
 			const [, pure, userId] = text.match(/^(.*)?\s*{#(.*)}$/mi) || [null, text,];
-	      		const idWithStyle = userId || pure.toLowerCase().replace(/[^\w]+/g, '-');
-			const id = idWithStyle.replace(/-strong-/g, '')
-			const hdrText = pure.replace(/<\/?\w+>/, '')
+	      		const id = userId || pure.toLowerCase().replace(/<\/?\w+>/g, '').replace(/[^\w]+/g, '-');
+
+			const hdrText = pure.replace(/<\/?\w+>/, '');
 			const indent = '&ensp;';
-			const link = `${indent.repeat(2 * (level - 1))}<a href="#${id}">${hdrText}</a><br>`
+			const link = `${indent.repeat(2 * (level - 1))}<a href="#${id}">${hdrText}</a>`;
+
 			links.push(link);
+
 			return `<h${level} id="${id}">${pure}</h${level}>`;
 		  };
 		  let md = data[0];
@@ -165,8 +167,10 @@
 		  }
 		  let html = window.marked(md, Object.assign(options, window.ZeroMd.markedjs.options));
 		  const toc = /\[TOC\]/i;
-		  const tableOfContent = links.join('')
-		  html = html.replace(toc, tableOfContent)
+
+		  const tableOfContent = links.join('<br>');
+
+		  html = html.replace(toc, tableOfContent);
             resolve('<div class="markdown-body">' + html + '</div>');
           }, err => { reject(err); });
       });

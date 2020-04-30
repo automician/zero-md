@@ -1,9 +1,9 @@
 [TOC]
 bb
-# The **Ultimate** Lorem Ipsum Markdown {#hdr-1}
+# The ***Ultimate*** Lorem Ipsum **Markdown** {#hdr-1}
 
 noGenerated from [Lorem Markdownum](https://github.com/jaspervdj/lorem-markdownum).
-A Lorem Ipsum generator that doesn't suck. :P
+A Lorem Ipsum **generator** that doesn't suck. :P
 
 ## Anchor link test {#hdr-4}
 Clicking [Taman et veri](#tamen-et-veri) should scroll to the correct section.
