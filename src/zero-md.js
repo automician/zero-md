@@ -213,14 +213,15 @@
     }
 
     _buildStyles() {
-      let stylehypho = ` .markdown-body {                
+      let styleHyphenopoly = ` .markdown-body {                
         hyphens: auto;
         -ms-hyphens: auto;
         -moz-hyphens: auto;
         -webkit-hyphens: auto;
       }`;
       return new Promise(resolve => {
-        let start = `<style class="markdown-style">${stylehypho}
+        let start = `<style class="markdown-style">
+        ${styleHyphenopoly}
         :host{display:block;position:relative;contain:content;}`;
         let end = '</style>';
         // First try reading from light DOM template
