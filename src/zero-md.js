@@ -161,13 +161,12 @@
     }
 
     _buildMd() {
-      return new Promise((resolve, reject) => {
-        
+      return new Promise((resolve, reject) => {        
         Promise.all([this._getInputs(),
-                     this._loadScriptHyphenopoly(),
-                     this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly),
                      this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
-                     this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')                     
+                     this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual'),
+                     this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly),
+                     this._loadScriptHyphenopoly()
                     ])
           .then(data => {
 
