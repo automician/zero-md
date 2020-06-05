@@ -21,6 +21,9 @@
       window.ZeroMd.config.anchorIdsToLowerCase = window.ZeroMd.config.anchorIdsToLowerCase === undefined ? 
         true : window.ZeroMd.config.anchorIdsToLowerCase;
       window.ZeroMd.config.indentInsideTocByPixels = window.ZeroMd.config.indentInsideTocByPixels || 40;
+      window.ZeroMd.config.useHyphenopoly = window.ZeroMd.config.useHyphenopoly || false;
+      window.ZeroMd.config.hyphenopolyLang = window.ZeroMd.config.hyphenopolyLang || 'la';
+      window.ZeroMd.config.loadHyphenopoly = window.ZeroMd.config.loadHyphenopoly || undefined;
       window.ZeroMd.config.markedUrl = window.ZeroMd.config.markedUrl || 'https://cdn.jsdelivr.net/npm/marked@0/marked.min.js';
       window.ZeroMd.config.prismUrl = window.ZeroMd.config.prismUrl || 'https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js';
       window.ZeroMd.config.hyphenopolyUrl = window.ZeroMd.config.hyphenopolyUrl || 'https://cdn.jsdelivr.net/gh/mnater/Hyphenopoly@4.3.0/Hyphenopoly_Loader.js';
@@ -146,27 +149,31 @@
     _loadScriptHyphenopoly() {
       const script = document.createElement('script');
       script.text = `var Hyphenopoly = {
-        require: {
-            "la": "honorificabilitudinitas",
-            "de": "Silbentrennungsalgorithmus",
-            "en-us": "Supercalifragilisticexpialidocious"
-        },
-        setup: {
-            selectors: {
-                ".markdown-body": {}
+            require: {
+                "en-us": "FORCEHYPHENOPOLY",
+                "ru": "FORCEHYPHENOPOLY",
+                "uk": "FORCEHYPHENOPOLY"
+            },
+            setup: {
+                CORScredentials: "omit",
+                selectors: {
+                    ".markdown-body": {}
+                }
             }
-        }
-    };`;
-    document.head.appendChild(script);  
+        };`;
+      document.head.appendChild(script);  
     }
 
     _buildMd() {
+      if (!window.ZeroMd.config.loadHyphenopoly) {
+        this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly);
+        this._loadScriptHyphenopoly();
+      }
+
       return new Promise((resolve, reject) => {        
         Promise.all([this._getInputs(),
                      this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
-                     this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual'),
-                     this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly),
-                     this._loadScriptHyphenopoly()
+                     this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')
                     ])
           .then(data => {
 
@@ -202,9 +209,12 @@
             const toc = `<div class="toc">${tocLinks.join('')}</div>`;
             html = html.replace(tocMarker, toc);
 
-            const paragraphTag = /<p>/g;
-            const paragraphTagWithLangAttribute = '<p lang="en-us">';
-            html = html.replace(paragraphTag, paragraphTagWithLangAttribute);
+            if (window.ZeroMd.config.useHyphenopoly) {
+              const lang = window.ZeroMd.config.hyphenopolyLang;
+              const paragraphTag = /<p>/g;
+              const paragraphTagWithLangAttribute = `<p lang="${lang}">`;            
+              html = html.replace(paragraphTag, paragraphTagWithLangAttribute);
+            }
 
             resolve('<div class="markdown-body">' + window.marked(html, { highlight: this._prismHighlight.bind(this) }) + '</div>');
           }, err => { reject(err); });
@@ -212,16 +222,15 @@
     }
 
     _buildStyles() {
-      let styleHyphenopoly = ` .markdown-body {                
+      let styleHyphenopoly = `\n.markdown-body {                
         hyphens: auto;
         -ms-hyphens: auto;
         -moz-hyphens: auto;
         -webkit-hyphens: auto;
-      }`;
+      }`;      
       return new Promise(resolve => {
-        let start = `<style class="markdown-style">
-        ${styleHyphenopoly}
-        :host{display:block;position:relative;contain:content;}`;
+        let start = '<style class="markdown-style">:host{display:block;position:relative;contain:content;}' + 
+        (!window.ZeroMd.config.loadHyphenopoly ? styleHyphenopoly : '');
         let end = '</style>';
         // First try reading from light DOM template
         let tpl = this.querySelector('template') && this.querySelector('template').content.querySelector('style') || false;
