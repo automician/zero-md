@@ -169,18 +169,18 @@
     }
 
     _buildMd() {
-      let scripts = [this._getInputs(),
-        this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
-        this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')
-       ];
-      if (window.ZeroMd.config.loadHyphenopoly) {
-        scripts.push(
-          this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly),
-          this._loadScriptHyphenopolySetup()
-        );
-      }
 
-      return new Promise((resolve, reject) => {        
+      return new Promise((resolve, reject) => {   
+        let scripts = [this._getInputs(),
+          this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
+          this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')
+         ];
+        if (window.ZeroMd.config.loadHyphenopoly) {
+          scripts.push(
+            this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly),
+            this._loadScriptHyphenopolySetup()
+          );
+        }     
         Promise.all(scripts)
           .then(data => {
 
