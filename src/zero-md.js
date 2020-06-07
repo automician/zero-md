@@ -21,9 +21,13 @@
       window.ZeroMd.config.anchorIdsToLowerCase = window.ZeroMd.config.anchorIdsToLowerCase === undefined ? 
         true : window.ZeroMd.config.anchorIdsToLowerCase;
       window.ZeroMd.config.indentInsideTocByPixels = window.ZeroMd.config.indentInsideTocByPixels || 40;
-      window.ZeroMd.config.useHyphenopoly = window.ZeroMd.config.useHyphenopoly || false;
-      window.ZeroMd.config.hyphenopolyLang = window.ZeroMd.config.hyphenopolyLang || 'la';
-      window.ZeroMd.config.loadHyphenopoly = window.ZeroMd.config.loadHyphenopoly || undefined;
+      // window.ZeroMd.config.useHyphenopoly = window.ZeroMd.config.useHyphenopoly || false;
+      // window.ZeroMd.config.hyphenopolyLang = window.ZeroMd.config.hyphenopolyLang || 'en-us';
+      window.ZeroMd.config.pTagLang = window.ZeroMd.config.pTagLang || undefined; 
+          // expect string with something like "en-us", "ru", etc...
+      window.ZeroMd.config.loadHyphenopoly = window.ZeroMd.config.loadHyphenopoly || false;
+      window.ZeroMd.config.addStyleTextAlignJustify= window.ZeroMd.config.addStyleTextAlignJustify || false;
+      window.ZeroMd.config.addStyleHyphensAuto = window.ZeroMd.config.addStyleHyphensAuto || false;
       window.ZeroMd.config.markedUrl = window.ZeroMd.config.markedUrl || 'https://cdn.jsdelivr.net/npm/marked@0/marked.min.js';
       window.ZeroMd.config.prismUrl = window.ZeroMd.config.prismUrl || 'https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js';
       window.ZeroMd.config.hyphenopolyUrl = window.ZeroMd.config.hyphenopolyUrl || 'https://cdn.jsdelivr.net/gh/mnater/Hyphenopoly@4.3.0/Hyphenopoly_Loader.js';
@@ -146,7 +150,7 @@
       }
     }
 
-    _loadScriptHyphenopoly() {
+    _loadScriptHyphenopolySetup() {
       const script = document.createElement('script');
       script.text = `var Hyphenopoly = {
             require: {
@@ -165,16 +169,19 @@
     }
 
     _buildMd() {
-      if (!window.ZeroMd.config.loadHyphenopoly) {
-        this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly);
-        this._loadScriptHyphenopoly();
+      let scripts = [this._getInputs(),
+        this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
+        this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')
+       ];
+      if (window.ZeroMd.config.loadHyphenopoly) {
+        scripts.push(
+          this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly),
+          this._loadScriptHyphenopolySetup()
+        );
       }
 
       return new Promise((resolve, reject) => {        
-        Promise.all([this._getInputs(),
-                     this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
-                     this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')
-                    ])
+        Promise.all(scripts)
           .then(data => {
 
             const renderer = new window.marked.Renderer();            
@@ -209,11 +216,13 @@
             const toc = `<div class="toc">${tocLinks.join('')}</div>`;
             html = html.replace(tocMarker, toc);
 
-            if (window.ZeroMd.config.useHyphenopoly) {
-              const lang = window.ZeroMd.config.hyphenopolyLang;
-              const paragraphTag = /<p>/g;
-              const paragraphTagWithLangAttribute = `<p lang="${lang}">`;            
-              html = html.replace(paragraphTag, paragraphTagWithLangAttribute);
+            // if (window.ZeroMd.config.useHyphenopoly) {
+            const lang = window.ZeroMd.config.pTagLang;
+            if (lang) {
+              // const lang = window.ZeroMd.config.hyphenopolyLang;
+              const paragraph = /<p>/g;
+              const paragraphWithLang= `<p lang="${lang}">`;            
+              html = html.replace(paragraph, paragraphWithLang);
             }
 
             resolve('<div class="markdown-body">' + window.marked(html, { highlight: this._prismHighlight.bind(this) }) + '</div>');
@@ -222,7 +231,12 @@
     }
 
     _buildStyles() {
-      let styleHyphenopoly = `\n.markdown-body {                
+      const styleTextJustify = `
+      .markdown-body {                
+        text-align: justify;
+      }`;
+      const styleHyphens = `
+      .markdown-body {                
         hyphens: auto;
         -ms-hyphens: auto;
         -moz-hyphens: auto;
@@ -230,7 +244,8 @@
       }`;      
       return new Promise(resolve => {
         let start = '<style class="markdown-style">:host{display:block;position:relative;contain:content;}' + 
-        (!window.ZeroMd.config.loadHyphenopoly ? styleHyphenopoly : '');
+        (window.ZeroMd.config.addStyleTextAlignJustify ? styleTextJustify : ''); + 
+        (window.ZeroMd.config.addStyleHyphensAuto ? styleHyphens : '');
         let end = '</style>';
         // First try reading from light DOM template
         let tpl = this.querySelector('template') && this.querySelector('template').content.querySelector('style') || false;
