@@ -25,12 +25,12 @@
       // window.ZeroMd.config.hyphenopolyLang = window.ZeroMd.config.hyphenopolyLang || 'en-us';
       window.ZeroMd.config.pTagLang = window.ZeroMd.config.pTagLang || undefined; 
           // expect string with something like "en-us", "ru", etc...
-      window.ZeroMd.config.loadHyphenopoly = window.ZeroMd.config.loadHyphenopoly || false;
-      window.ZeroMd.config.addStyleTextAlignJustify= window.ZeroMd.config.addStyleTextAlignJustify || false;
-      window.ZeroMd.config.addStyleHyphensAuto = window.ZeroMd.config.addStyleHyphensAuto || false;
+      // window.ZeroMd.config.loadHyphenopoly = window.ZeroMd.config.loadHyphenopoly || false;
+      // window.ZeroMd.config.addStyleTextAlignJustify= window.ZeroMd.config.addStyleTextAlignJustify || false;
+      // window.ZeroMd.config.addStyleHyphensAuto = window.ZeroMd.config.addStyleHyphensAuto || false;
       window.ZeroMd.config.markedUrl = window.ZeroMd.config.markedUrl || 'https://cdn.jsdelivr.net/npm/marked@0/marked.min.js';
       window.ZeroMd.config.prismUrl = window.ZeroMd.config.prismUrl || 'https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js';
-      window.ZeroMd.config.hyphenopolyUrl = window.ZeroMd.config.hyphenopolyUrl || 'https://cdn.jsdelivr.net/gh/mnater/Hyphenopoly@4.3.0/Hyphenopoly_Loader.js';
+      // window.ZeroMd.config.hyphenopolyUrl = window.ZeroMd.config.hyphenopolyUrl || 'https://cdn.jsdelivr.net/gh/mnater/Hyphenopoly@4.5.0/Hyphenopoly_Loader.js';
       window.ZeroMd.config.cssUrls = window.ZeroMd.config.cssUrls || ['https://cdn.jsdelivr.net/npm/github-markdown-css@2/github-markdown.min.css', 'https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism.min.css'];
       window.ZeroMd.cache = window.ZeroMd.cache || {};
     }
@@ -150,38 +150,41 @@
       }
     }
 
-    _loadScriptHyphenopolySetup() {
-      const script = document.createElement('script');
-      script.text = `var Hyphenopoly = {
-            require: {
-                "en-us": "FORCEHYPHENOPOLY",
-                "ru": "FORCEHYPHENOPOLY",
-                "uk": "FORCEHYPHENOPOLY"
-            },
-            setup: {
-                CORScredentials: "omit",
-                selectors: {
-                    ".markdown-body": {}
-                }
-            }
-        };`;
-      document.head.appendChild(script);  
-    }
+    // _loadScriptHyphenopolySetup() {
+    //   const script = document.createElement('script');
+    //   script.text = `var Hyphenopoly = {
+    //         require: {
+    //             "en-us": "FORCEHYPHENOPOLY",
+    //             "ru": "FORCEHYPHENOPOLY",
+    //             "uk": "FORCEHYPHENOPOLY"
+    //         },
+    //         setup: {
+    //             CORScredentials: "omit",
+    //             selectors: {
+    //                 ".markdown-body": {}
+    //             }
+    //         }
+    //     };`;
+    //   document.head.appendChild(script);  
+    // }
 
     _buildMd() {
 
       return new Promise((resolve, reject) => {   
-        let scripts = [this._getInputs(),
+        // let scripts = [this._getInputs(),
+        //   this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
+        //   this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')
+        //  ];
+        // if (window.ZeroMd.config.loadHyphenopoly) {
+        //   scripts.push(
+        //     this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly),
+        //     this._loadScriptHyphenopolySetup()
+        //   );
+        // }     
+        Promise.all([this._getInputs(),
           this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
           this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')
-         ];
-        if (window.ZeroMd.config.loadHyphenopoly) {
-          scripts.push(
-            this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly),
-            this._loadScriptHyphenopolySetup()
-          );
-        }     
-        Promise.all(scripts)
+         ])
           .then(data => {
 
             const renderer = new window.marked.Renderer();            
@@ -231,21 +234,22 @@
     }
 
     _buildStyles() {
-      const styleTextJustify = `
-      .markdown-body {                
-        text-align: justify;
-      }`;
-      const styleHyphens = `
-      .markdown-body {                
-        hyphens: auto;
-        -ms-hyphens: auto;
-        -moz-hyphens: auto;
-        -webkit-hyphens: auto;
-      }`;      
+      // const styleTextJustify = `
+      // .markdown-body {                
+      //   text-align: justify;
+      // }`;
+      // const styleHyphens = `
+      // .markdown-body {                
+      //   hyphens: auto;
+      //   -ms-hyphens: auto;
+      //   -moz-hyphens: auto;
+      //   -webkit-hyphens: auto;
+      // }`;      
       return new Promise(resolve => {
-        let start = '<style class="markdown-style">:host{display:block;position:relative;contain:content;}' + 
-        (window.ZeroMd.config.addStyleTextAlignJustify ? styleTextJustify : ''); + 
-        (window.ZeroMd.config.addStyleHyphensAuto ? styleHyphens : '');
+        let start = '<style class="markdown-style">:host{display:block;position:relative;contain:content;}'
+          ;
+          // + (window.ZeroMd.config.addStyleTextAlignJustify ? styleTextJustify : '')
+          // + (window.ZeroMd.config.addStyleHyphensAuto ? styleHyphens : '');
         let end = '</style>';
         // First try reading from light DOM template
         let tpl = this.querySelector('template') && this.querySelector('template').content.querySelector('style') || false;
