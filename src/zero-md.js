@@ -7,6 +7,7 @@
     get noShadow() { return this.hasAttribute('no-shadow'); }
     get markedUrl() { return this.getAttribute('marked-url') || window.ZeroMd.config.markedUrl; }
     get prismUrl() { return this.getAttribute('prism-url') || window.ZeroMd.config.prismUrl; }
+    get hyphenopolyUrl() { return this.getAttribute('hyphenopoly-url') || window.ZeroMd.config.hyphenopolyUrl; }
     get cssUrls() {
       let attr = this.getAttribute('css-urls');
       return attr ? JSON.parse(attr) : window.ZeroMd.config.cssUrls;
@@ -20,8 +21,12 @@
       window.ZeroMd.config.anchorIdsToLowerCase = window.ZeroMd.config.anchorIdsToLowerCase === undefined ? 
         true : window.ZeroMd.config.anchorIdsToLowerCase;
       window.ZeroMd.config.indentInsideTocByPixels = window.ZeroMd.config.indentInsideTocByPixels || 40;
+      window.ZeroMd.config.useHyphenopoly = window.ZeroMd.config.useHyphenopoly || false;
+      window.ZeroMd.config.hyphenopolyLang = window.ZeroMd.config.hyphenopolyLang || 'la';
+      window.ZeroMd.config.loadHyphenopoly = window.ZeroMd.config.loadHyphenopoly || undefined;
       window.ZeroMd.config.markedUrl = window.ZeroMd.config.markedUrl || 'https://cdn.jsdelivr.net/npm/marked@0/marked.min.js';
       window.ZeroMd.config.prismUrl = window.ZeroMd.config.prismUrl || 'https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js';
+      window.ZeroMd.config.hyphenopolyUrl = window.ZeroMd.config.hyphenopolyUrl || 'https://cdn.jsdelivr.net/gh/mnater/Hyphenopoly@4.3.0/Hyphenopoly_Loader.js';
       window.ZeroMd.config.cssUrls = window.ZeroMd.config.cssUrls || ['https://cdn.jsdelivr.net/npm/github-markdown-css@2/github-markdown.min.css', 'https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism.min.css'];
       window.ZeroMd.cache = window.ZeroMd.cache || {};
     }
@@ -78,7 +83,7 @@
           document.head.appendChild(el);
         }
       });
-    }
+    }    
 
     _getStylesheet(url) {
       return new Promise((resolve, reject) => {
@@ -141,16 +146,40 @@
       }
     }
 
+    _loadScriptHyphenopoly() {
+      const script = document.createElement('script');
+      script.text = `var Hyphenopoly = {
+            require: {
+                "en-us": "FORCEHYPHENOPOLY",
+                "ru": "FORCEHYPHENOPOLY",
+                "uk": "FORCEHYPHENOPOLY"
+            },
+            setup: {
+                CORScredentials: "omit",
+                selectors: {
+                    ".markdown-body": {}
+                }
+            }
+        };`;
+      document.head.appendChild(script);  
+    }
+
     _buildMd() {
-      return new Promise((resolve, reject) => {
+      if (!window.ZeroMd.config.loadHyphenopoly) {
+        this._loadScript(this.hyphenopolyUrl, typeof window.hyphenopoly);
+        this._loadScriptHyphenopoly();
+      }
+
+      return new Promise((resolve, reject) => {        
         Promise.all([this._getInputs(),
                      this._loadScript(this.markedUrl, typeof window.marked, 'zero-md-marked-ready', 'async'),
-                     this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')])
+                     this._loadScript(this.prismUrl, typeof window.Prism, 'zero-md-prism-ready', 'async', 'data-manual')
+                    ])
           .then(data => {
 
             const renderer = new window.marked.Renderer();            
-            let tocLinks = []; 
-            let md = data[0];                       
+            let tocLinks = [];
+            let md = data[0];
             const [, tocStartLevel] = md.match(/<!--toc>(\d)-->/i) || [null, 0];
             
             renderer.heading = (text, level) => {
@@ -168,7 +197,7 @@
               }  
               return`<h${level}>${(encodeURI(id) === id) ? '' : `<span id="${encodeURI(id)}"></span>`}
               <a id="${id}" class="anchor" aria-hidden="true" href="#${id}"></a>${pure}</h${level}>`;
-            };                      
+            };
 
             const options = {
               renderer: renderer,
@@ -180,14 +209,28 @@
             const toc = `<div class="toc">${tocLinks.join('')}</div>`;
             html = html.replace(tocMarker, toc);
 
+            if (window.ZeroMd.config.useHyphenopoly) {
+              const lang = window.ZeroMd.config.hyphenopolyLang;
+              const paragraphTag = /<p>/g;
+              const paragraphTagWithLangAttribute = `<p lang="${lang}">`;            
+              html = html.replace(paragraphTag, paragraphTagWithLangAttribute);
+            }
+
             resolve('<div class="markdown-body">' + window.marked(html, { highlight: this._prismHighlight.bind(this) }) + '</div>');
           }, err => { reject(err); });
       });
     }
 
     _buildStyles() {
+      let styleHyphenopoly = `\n.markdown-body {                
+        hyphens: auto;
+        -ms-hyphens: auto;
+        -moz-hyphens: auto;
+        -webkit-hyphens: auto;
+      }`;      
       return new Promise(resolve => {
-        let start = '<style class="markdown-style">:host{display:block;position:relative;contain:content;}';
+        let start = '<style class="markdown-style">:host{display:block;position:relative;contain:content;}' + 
+        (!window.ZeroMd.config.loadHyphenopoly ? styleHyphenopoly : '');
         let end = '</style>';
         // First try reading from light DOM template
         let tpl = this.querySelector('template') && this.querySelector('template').content.querySelector('style') || false;
