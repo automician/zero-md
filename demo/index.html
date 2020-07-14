@@ -9,7 +9,29 @@
     <link rel="canonical" href="https://zerodevx.github.io/zero-md/demo/index.html">
 
     <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2/webcomponents-loader.js" defer></script>
+    <script>
+	                                    var Hyphenopoly = {
+						                                                                require: {
+															                                                                                        "en-us": "FORCEHYPHENOPOLY",
+															                                                                                        "ru": "FORCEHYPHENOPOLY",
+															                                                                                        "de": "Silbentrennungsalgorithmus"
+															                                                                                    },
+						                                                                setup: {
+															                                                                                        processShadows: true,
+															                                                                                        CORScredentials: "omit",
+															                                                                                        selectors:
+															                                                                                                {
+																												                                                                                                                                        // , ".markdown-body": {} // is included into #allrecords - the root tilda container
+																												                                                                                                                                        ".hyphenate": {
 
+																																														                                                                                                                                                                        }
+																												                                                                                                                                },
+
+															                                                                                    }
+						                                                            };
+                </script>
+
+    <script src="https://cdn.jsdelivr.net/gh/mnater/Hyphenopoly@4.5.0/Hyphenopoly_Loader.js"></script>
     <script type="module">
       WebComponents.waitFor(() => {
         let el = document.createElement('script');
@@ -46,6 +68,7 @@
     </style>
 
     <div class="container">
+      <zero-md src="md-test.md"></zero-md>
       <h4>1. &lt;zero-md&gt; is self-contained.</h4>
       <p>Different markdown and highlight styles can be applied to an instance without affecting other instances, or the rest of the document.</p>
       <div class="row">
