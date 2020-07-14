@@ -147,6 +147,16 @@
       } else {
         let root = this.shadowRoot || this.attachShadow({mode: 'open'});
         root.innerHTML = data;
+
+	const script = document.createElement('script') // Створюєм скрипт 
+	
+	script.text = `Hyphenopoly.hyphenators.HTML.then((hyn) => { // Записуємо сюди той скрипт, який нам давав розробник 
+			    ${root}.querySelectorAll("p").forEach((n) => { // Ось тут ми мали шукати селектором <p> у ${root}, але воно таким способом не паше
+			        hyn(n);
+			    });
+		   });`;
+
+	document.head.appendChild(script); // Додаємо скрипт в хед
       }
     }
 
